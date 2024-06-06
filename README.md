@@ -1,5 +1,25 @@
-## Info
-Log Searcher for Lobster_data System to determine input files that are processed and it's filesize.
+## Information about the Project
+Log Searcher (specifically message logs) for the Lobster_data System.
+
+Used to determine all input files that the System has processed in the last 7 days and writes the filesize for every file in a csv file.
+
+## Useful Command to create requirements.txt
+
+You can use the following code to generate a requirements.txt file:
+
+`pip install pipreqs`
+
+`pipreqs /path/to/project`
+
+The benefits of using pipreqs from its GitHub.
+
+### Why not pip freeze?
+`pip freeze only saves the packages that are installed with pip install in your environment.`
+
+`pip freeze saves all packages in the environment including those that you don't use in your current project (if you don't have virtualenv).
+and sometimes you just need to create requirements.txt for a new project without installing modules.`
+
+Kuods to a the very useful [Stackoverflow answer](https://stackoverflow.com/questions/31684375/automatically-create-file-requirements-txt)
 
 ## Screenshot of Program
-![image](https://github.com/zaricj/LobsterLogSearcher/assets/93329694/0de3335a-acec-4060-88b8-1c0f1b433f64)
+![alt text](image.png)
