@@ -22,4 +22,4 @@ and sometimes you just need to create requirements.txt for a new project without
 Kuods to a the very useful [Stackoverflow answer](https://stackoverflow.com/questions/31684375/automatically-create-file-requirements-txt)
 
 ## Screenshot of Program
-![alt text](image.png)
+![alt text](/img/image.png)
