@@ -1,6 +1,7 @@
 import PySimpleGUI as sg
 from tqdm import tqdm
 from multiprocessing import Pool
+import pandas as pd
 import csv
 import re
 import os
@@ -129,7 +130,32 @@ def print_total_log_files(filepath):
             pass
     except TypeError:
         pass
+
+
+def summarize_filesize_in_bytes_column(folder_path_to_csv_result):
+    try:
+        window["-OUTPUT_WINDOW-"].update("Calculating Total Filesize in Bytes... please wait.")
+        
+        # Read the CSV file
+        df = pd.read_csv(folder_path_to_csv_result) 
+
+        # Calculate the total amount of numbers in the "Filesize in Bytes" column
+        total_filesize = df['Filesize in Bytes'].sum()  
+
+        kb = total_filesize / 1024
+        mb = kb / 1024
+        gb = mb / 1024  
+
+        # Print the result
+        window["-OUTPUT_WINDOW-"].update(f'Total Filesize in Bytes: {total_filesize}\nIn Kb = {round(kb,2)}\nIn Mb = {round(mb,2)}\nIn Gb = {round(gb,2)}')
     
+    except FileNotFoundError:
+        window["-OUTPUT_WINDOW-"].update(f"No such file or directory.")
+        if values["-CSV_RESULT-"]:
+            window["-OUTPUT_WINDOW-"].update("Grabbed folder path of input field of previous saved csv result.\n\nPlease retry by pressing SUM again.")
+            window["-CSV_SUM_FILEPATH-"].update(values["-CSV_RESULT-"])
+        else:
+            window["-CSV_SUM_FILEPATH-"].update("")
 
 custom_theme = {
     "BACKGROUND": "#31353d",
@@ -153,18 +179,22 @@ font = ("Calibri", 13)
 CSV_FILETPYE = (("CSV (Comma Separated Value)", ".csv"),)
 
 # ===== Layout ===== #
-main_layout  = [[sg.Text("Lobster Message Log Searcher for Input Data", font="Calibri 15 bold", text_color="#4E7AC7")],
+main_layout  = [[sg.Text("Lobster Message Log Searcher for Input Data", font="Calibri 15 bold", text_color="#466db3")],
                 [sg.HSep()],
                 [sg.Text("Select folder that contains log files:")],
                 [sg.Input("", key="-LOGS_FILEPATH-", enable_events=True, expand_x=True , pad=5), sg.FolderBrowse(target="-LOGS_FILEPATH-", expand_x=True , pad=5)],
-                [sg.Text("Save result as CSV File:")],
+                [sg.Text("Select folder where to save result as CSV File:")],
                 [sg.Input("", key="-CSV_RESULT-", expand_x=True, pad=5), sg.SaveAs(button_text="Browse", target="-CSV_RESULT-", file_types=CSV_FILETPYE, expand_x=True, pad=5)],
                 [sg.Button("Start", key="-START-", size=(5,1)), sg.Button("Exit", key="-EXIT-", size=(5,1)), sg.Text("Status:") , sg.StatusBar(" ",key="-STATUSBAR-", auto_size_text=True, size=(10,1))]]
 
+csv_summarize_filesize_layout = [[sg.Text("Sum Total Filesize:"), sg.Input("folder/path/to/csv_results.csv", key="-CSV_SUM_FILEPATH-", expand_x=True), sg.FileBrowse(file_types=CSV_FILETPYE, target="-CSV_SUM_FILEPATH-"), sg.Button("Summarize",key="-GET_SUM-")]]
+
 output_window_layout = [[sg.Multiline(size=(42,12), key="-OUTPUT_WINDOW-")]]
 
+checkbox_layout = [[sg.Checkbox("Show Sum Option", default=False, enable_events=True , key="-CSV_SUM_CHECKBOX-"), sg.pin(sg.Column(csv_summarize_filesize_layout, key="-CSV_SUM_FRAME-", visible=False))]]
 
-layout = [[sg.Column(main_layout),sg.VSep(),sg.Column(output_window_layout)]]
+layout = [[sg.Column(main_layout),sg.VSep(),sg.Column(output_window_layout)],
+          [sg.Column(checkbox_layout)]]
 
 window = sg.Window("Log Searcher", layout, font=font, icon=PROGRAM_ICON, finalize=True)
 
@@ -174,7 +204,7 @@ input_checked = False
 while True:
     
     event,values = window.read()
-    
+    #print(f"Event {event} || Value {values}")
     
     if (event == sg.WINDOW_CLOSE_ATTEMPTED_EVENT or event == '-EXIT-') and sg.popup_yes_no('Do you really want to exit?') == 'Yes':
         break
@@ -186,8 +216,15 @@ while True:
         # VARIABLES
         log_filepath = values["-LOGS_FILEPATH-"]
         output_csv = values["-CSV_RESULT-"]
+        csv_result_path = values["-CSV_SUM_FILEPATH-"]
     except TypeError:
         pass
+    
+    if event == "-CSV_SUM_CHECKBOX-":
+        if values["-CSV_SUM_CHECKBOX-"]:
+            window["-CSV_SUM_FRAME-"].update(visible=True)
+        else:
+            window["-CSV_SUM_FRAME-"].update(visible=False)
     
     if event == "-LOGS_FILEPATH-":
         if not input_checked and len(log_filepath) > 0:
@@ -197,11 +234,14 @@ while True:
     
     if event == "-START-":
         if not log_filepath:
-            window["-OUTPUT_WINDOW-"].update("Input for folder path that contains log files is empty")
+            window["-OUTPUT_WINDOW-"].update("Input for folder path that contains log files is empty.")
         elif not output_csv:
-            window["-OUTPUT_WINDOW-"].update("Input folder path for saving result as CSV file is empty")
+            window["-OUTPUT_WINDOW-"].update("Input folder path for saving result as CSV file is empty.")
         else:
             window.perform_long_operation(lambda: extract_and_write_to_csv(log_filepath,output_csv),"-OUTPUT_WINDOW-")
+            
+    if event == "-GET_SUM-":
+        window.perform_long_operation(lambda: summarize_filesize_in_bytes_column(csv_result_path),"-OUTPUT_WINDOW-")
     
     
 window.close()
