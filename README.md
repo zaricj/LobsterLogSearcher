@@ -1,7 +1,7 @@
 ## Information about the Project
 Log Searcher (specifically message logs) for the Lobster_data System.
 
-Used to determine all input files that the System has processed in the last 7 days and writes the filesize for every file in a csv file.
+Used to determine all input files that the System has processed in the last 7 days and writes the filesize for every file in a csv file, based on unique time value.
 
 ## Useful Command to create requirements.txt
 
