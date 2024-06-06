@@ -32,7 +32,7 @@ jobs:
 
     - name: Build EXE
       run: |
-        pyinstaller --onefile --windowed ./XMLuvation.py
+        pyinstaller --onefile --windowed app/LogSearcherGUI.py
 
     - name: Upload artifact
       uses: actions/upload-artifact@v2
