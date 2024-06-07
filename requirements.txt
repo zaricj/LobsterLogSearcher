@@ -1,4 +1,4 @@
 pandas==2.2.2
-PySimpleGUI==5.0.4
 PySimpleGUI==5.0.5
+pywinstyles==1.8
 tqdm==4.66.2
