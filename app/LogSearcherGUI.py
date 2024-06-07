@@ -62,7 +62,7 @@ def process_file(filepath):
         
         # Initialize tqdm progress bar for each line
         progress_bar = tqdm(total=total_lines, desc=f"Processing {os.path.basename(filepath)}", unit=" lines")
-        window["-OUTPUT_WINDOW-"].print(f"File {filename} is being processed...")
+        window["-OUTPUT_WINDOW-"].print(f"File {filename} is being processed...\n")
         
         for line in log_file:
             # Extract information from the line
@@ -93,7 +93,7 @@ def extract_and_write_to_csv(filepath, output_file_csv):
     elif os.path.isdir(filepath):
         files = [os.path.join(filepath, f) for f in os.listdir(filepath) if f.endswith("_message.log")] # only log files that end with _message.log
     else:
-        print("Invalid filepath.")
+        window["-OUTPUT_WINDOW-"].print("Invalid filepath.")
         return
 
     count = 0
@@ -110,7 +110,7 @@ def extract_and_write_to_csv(filepath, output_file_csv):
             writer.writerow(["Time", "Job Number", "Profile Name", "Filename", "Filesize in Bytes"])  # Header row
             writer.writerows(data)
         print(f"Data has been written to {output_file_csv}\n\nTotal Matches: {len(data)}")
-        window["-OUTPUT_WINDOW-"].update(f"Data has been written to {output_file_csv}\nTotal Matches: {len(data)}")
+        window["-OUTPUT_WINDOW-"].update(f"Data has been written to: {output_file_csv}\nTotal Matches: {len(data)}")
         window["-STATUSBAR-"].update(value=f"Processing complete")
     except Exception as e:
         print("Error writing to CSV:", e)
@@ -129,6 +129,8 @@ def print_total_log_files(filepath):
             window["-STATUSBAR-"].update(value="")
             pass
     except TypeError:
+        pass
+    except FileNotFoundError:
         pass
 
 
@@ -177,26 +179,32 @@ font = ("Calibri", 13)
 
 # CONSTANTS
 CSV_FILETPYE = (("CSV (Comma Separated Value)", ".csv"),)
+MENU_DEFINITION = [["&File", ["&Lobster TEST Logs Folder::OpenLogsFolder", "Lobster PROD Logs Folder::OpenLogsFolder", "Clear Output::ClearOutput", "---", "E&xit"]]]
 
 # ===== Layout ===== #
-main_layout  = [[sg.Text("Lobster Message Log Searcher for Input Data", font="Calibri 15 bold", text_color="#466db3")],
+# titlebar = [[sg.Titlebar(title="Log Searcher", icon=PROGRAM_ICON, text_color="#FFFFFF", background_color="#31353d", key="-TITLEBAR-")]]
+
+custom_menubar_layout = [[sg.MenubarCustom(MENU_DEFINITION, bar_background_color="#4d5157", bar_text_color="#FFFFFF",background_color="#4d5157",text_color="#FFFFFF")]]
+
+main_layout  = [[sg.Text("Lobster Message Log Searcher for Input Data Filesize", font="Calibri 15 bold", text_color="#466db3")],
                 [sg.HSep()],
                 [sg.Text("Select folder that contains log files:")],
                 [sg.Input("", key="-LOGS_FILEPATH-", enable_events=True, expand_x=True , pad=5), sg.FolderBrowse(target="-LOGS_FILEPATH-", expand_x=True , pad=5)],
                 [sg.Text("Select folder where to save result as CSV File:")],
-                [sg.Input("", key="-CSV_RESULT-", expand_x=True, pad=5), sg.SaveAs(button_text="Browse", target="-CSV_RESULT-", file_types=CSV_FILETPYE, expand_x=True, pad=5)],
+                [sg.Input("", key="-CSV_RESULT-", expand_x=True, pad=5), sg.SaveAs(button_text="Browse", target="-CSV_RESULT-", file_types=CSV_FILETPYE, expand_x=True, pad=7)],
                 [sg.Button("Start", key="-START-", size=(5,1)), sg.Button("Exit", key="-EXIT-", size=(5,1)), sg.Text("Status:") , sg.StatusBar(" ",key="-STATUSBAR-", auto_size_text=True, size=(10,1))]]
 
 csv_summarize_filesize_layout = [[sg.Text("Sum Total Filesize:"), sg.Input("folder/path/to/csv_results.csv", key="-CSV_SUM_FILEPATH-", expand_x=True), sg.FileBrowse(file_types=CSV_FILETPYE, target="-CSV_SUM_FILEPATH-"), sg.Button("Summarize",key="-GET_SUM-")]]
 
 output_window_layout = [[sg.Multiline(size=(42,12), key="-OUTPUT_WINDOW-")]]
 
-checkbox_layout = [[sg.Checkbox("Show Sum Option", default=False, enable_events=True , key="-CSV_SUM_CHECKBOX-"), sg.pin(sg.Column(csv_summarize_filesize_layout, key="-CSV_SUM_FRAME-", visible=False))]]
+checkbox_layout = [[sg.Checkbox("Summarize Option:", default=False, enable_events=True , key="-CSV_SUM_CHECKBOX-"), sg.pin(sg.Column(csv_summarize_filesize_layout, key="-CSV_SUM_FRAME-", visible=False))]]
 
-layout = [[sg.Column(main_layout),sg.VSep(),sg.Column(output_window_layout)],
+layout = [[sg.Column(custom_menubar_layout, expand_x=True)],
+          [sg.Column(main_layout),sg.VSep(),sg.Column(output_window_layout)],
           [sg.Column(checkbox_layout)]]
 
-window = sg.Window("Log Searcher", layout, font=font, icon=PROGRAM_ICON, finalize=True)
+window = sg.Window("Lobster Message Log Searcher", layout, font=font, icon=PROGRAM_ICON, finalize=True, grab_anywhere=True)
 
 # Flag which checks the input element for every change
 input_checked = False
@@ -214,7 +222,7 @@ while True:
     
     try:
         # VARIABLES
-        log_filepath = values["-LOGS_FILEPATH-"]
+        log_filepath = values["-LOGS_FILEPATH-"].strip()
         output_csv = values["-CSV_RESULT-"]
         csv_result_path = values["-CSV_SUM_FILEPATH-"]
     except TypeError:
@@ -243,5 +251,15 @@ while True:
     if event == "-GET_SUM-":
         window.perform_long_operation(lambda: summarize_filesize_in_bytes_column(csv_result_path),"-OUTPUT_WINDOW-")
     
+    if event == "Clear Output::ClearOutput":
+        window["-OUTPUT_WINDOW-"].update("")
+        
+    if event == "Lobster TEST Logs Folder::OpenLogsFolder":
+        window.write_event_value(key="-LOGS_FILEPATH-", value="//nesist02/hub/logs/DataWizard")
+        window["-LOGS_FILEPATH-"].update("//nesist02/hub/logs/DataWizard")
     
+    if event == "Lobster PROD Logs Folder::OpenLogsFolder":
+        window.write_event_value(key="-LOGS_FILEPATH-", value="//nesis002/hub/logs/DataWizard")
+        window["-LOGS_FILEPATH-"].update("//nesis002/hub/logs/DataWizard")
+        
 window.close()
