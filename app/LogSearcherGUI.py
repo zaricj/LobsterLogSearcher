@@ -2,6 +2,7 @@ import PySimpleGUI as sg
 from tqdm import tqdm
 from multiprocessing import Pool
 import pandas as pd
+import pywinstyles
 import csv
 import re
 import os
@@ -220,6 +221,8 @@ layout = [[sg.Column(custom_menubar_layout, expand_x=True)],
 
 window = sg.Window("Lobster Message Log Searcher", layout, font=font, icon=PROGRAM_ICON, finalize=True, grab_anywhere=True)
 
+# Window Style
+pywinstyles.apply_style(window,"mica")
 # Flag which checks the input element for every change
 input_checked = False
 
