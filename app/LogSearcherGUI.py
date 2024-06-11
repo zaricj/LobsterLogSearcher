@@ -1,8 +1,8 @@
-import PySimpleGUI as sg
+import FreeSimpleGUI as sg
 from tqdm import tqdm
-from multiprocessing import Pool
 import pandas as pd
 import pywinstyles
+import datetime
 import csv
 import re
 import os
@@ -10,6 +10,8 @@ import re
 import time
 
 PROGRAM_ICON = b'iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAAM8gAADPIBWg++mQAABgdJREFUWMO1l2tsHFcVx3/nzj68XttxTB71gzivhXjVvElC02wTkvRFKJumpQIVFKRKAQRSP0ARBQkhYSEhWlS1YGjFF0qVVtCgJqg1CpREMWnjtknTOHZCKgJJkyxZe+31Yze2d+cePowde2M7a0dwpJFWmtl7fnP+/3vuGWFcLNv8IMZagAeAX6tqDTMIBVdEXhXhmyipjpb9Rf/jG59cXBdEtlnVpwRqtm5cy8poBKu26EJGhFRPn/PH5sO7+jPZfcaYP0wH2ndD8u2qNDUsrY9cTnSyMhrh4c9uIe9ODyDRmeLgkXf8vQOZOWaaVTMFya023fmp5ZFv7X6YcGkJ1lryrsV13aJX3nWxrkXRmaiGz1gLIttUadq0bkXk23u+iOtarM5soVsNAzxgrf5y2dIFkS/Ft+O6lqtd3bjTKPv/InxAkzFSl7ia4ie/eBGriuta+geyBIMBmGFJZwygqnX3bt7A2uWfLHjrkmDA2wH2/wwAEI0sYsfWjeRdt+CmtYrexAsiMnKN/DaC3AqAVc/tqt5Co2GMjIDYAhAjggLp3n4SyRSDwzmMCMO5HK5VZoJxvREJcKL9HOcvXsGMg1CUlQ0RFi+oQVUxRrh4JUnzoWO0vt9BTzqF33FxLVj1kx4YRIxZJhCOxuKZYt3wOgAC7506y58PH8NxxtqIKoRDIZYurMVaOPpuG8/vPYCTu8J9q2FFvTCnQsjl4VJqmLf+IfztNF9PZ5jrGL4XjcUv3gxCGjZ9Xh9/7BEeum8LPb39ZAcHC0qoQEVZKeHSEG8db+OZ37zMnUvTfO0ew8fneJXTkQoiMJyD1g/h53+CM5d43THsAa5MBeEbn6hyVhlVlRVjJlSLtYqIcCmR5IW9B9i4JM33HzKEguBaJqjtGIg1QGUYvvsiO84necJv+E40FncngyjwwPHTYx64Ufvmw63Ya5fZc7fB78ALB+G2Soivgxt3qmth+QL48l3w09d4NO/yigitM/LAqPaRhXWk+wd479RZ7l0FC+fDG8fht4fgiZ2MaXBDWIV7VsGrx5jb/hFb/E4xAIVHdmzlc9s2Ish17VWVq53ddKW6uH2zYC0c/ADWLIb7V8NUJ7UqVJXBslpov8gawJlMhpt6wPWGE/ozWfL5YWaVem7v6oMtt0Mo4JV7qjACJX5AmA8EgGsz9kBkUR0+x0HE4Fpv0YDPg5hOkx55ZhCYFLW4BxbVMW/ObEpLy/l35yB3NAgr6qH5fdi1ASLVE004GoM5SPSAKmeAock6ZFEPuK7Lx2bP4hOL6zl8+io71zs8uAGOnvW8EKmePLljoOMjaLtAzjG8DdDe8trUAJN5QNWbb4LGYfumtfzsV200nxhi1x3C07u9qk12VonAwCC8dAS6B3jbMbw5lURTemAMTFkVjbBhdZS7Pr2eZ99ooTIMn1nu3bfjlBXAGOi/Bs81w1/byBjhaSBVFKD4WVDHV79wP/2ZLD/6/QnOXFZ2rBFqqsDveBXMDnllf+kIHGqn17UgwjrgA6AyGot3ALnxW3HaZ0GoJIgRoS+T5cBfjvL6m39H8t001FqqyrzteKETziUMvVlajfBDERqAJ4Fe0NkgjUATkB+FKPBARXmYivLwJIVSVMGqUh4u5dGddxNbv4KT7R/yzwsJLnWnKQkGqFkS4lzyOMLA70TMQeAUsDsQKl0dDJUykO5uVG8Cb4rG4vmOlv3jJBgxXbEYfaa+dj4L627DWiWfz+M4Dp3dad492U66r9+OiBhCtcwfCFI1vxafP1CeTiYa1ZvEm6KxeH663w8TwlpveFVVHMfxmpfVgu+CTMD9FyJPZvrSiZ5kgoqquVTOqy4XYxpR/Qbg890qwESRJkZ42MEEA/vs0BB9qeRzQPXsedUA5enkfxpVbdgHqBEjPueWiwF4c6JxTIGBO1r2E43FwefsI+8WQFg3X9HblfyBDzj/zsmOJcC0PkJvBpDq6WMgk80Zka4CiE1xAoT3DUuWvu7OZ611a9RrICrRWPwxVf0xUH3L2cdkcAXZK8LjQM/4/R6NxRFxUHW/gupTiPiBZ/4LnvL5JbtvU/gAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjAtMDEtMDNUMDE6MDM6NTUrMDA6MDDezxEdAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDIwLTAxLTAzVDAxOjAzOjU1KzAwOjAwr5KpoQAAAEZ0RVh0c29mdHdhcmUASW1hZ2VNYWdpY2sgNi43LjgtOSAyMDE5LTAyLTAxIFExNiBodHRwOi8vd3d3LmltYWdlbWFnaWNrLm9yZ0F74sgAAAAYdEVYdFRodW1iOjpEb2N1bWVudDo6UGFnZXMAMaf/uy8AAAAYdEVYdFRodW1iOjpJbWFnZTo6aGVpZ2h0ADUxMsDQUFEAAAAXdEVYdFRodW1iOjpJbWFnZTo6V2lkdGgANTEyHHwD3AAAABl0RVh0VGh1bWI6Ok1pbWV0eXBlAGltYWdlL3BuZz+yVk4AAAAXdEVYdFRodW1iOjpNVGltZQAxNTc4MDEzNDM1cTONFgAAABF0RVh0VGh1bWI6OlNpemUAMTlLQkKmYR+PAAAARXRFWHRUaHVtYjo6VVJJAGZpbGU6Ly8uL3VwbG9hZHMvMjU0MTYvM3l4VFhKZy8yMTA0L3NlYXJjaF9pY29uXzEyOTUzMy5wbmcOetOvAAAAAElFTkSuQmCC'
+now = datetime.datetime.now()
+timestamp = now.strftime("%d-%m-%Y %H:%M:%S")
 
 # FUNCTIONS
 def extract_info_from_line(line):
@@ -64,7 +66,7 @@ def process_file(filepath):
         
         # Initialize tqdm progress bar for each line
         progress_bar = tqdm(total=total_lines, desc=f"Processing {os.path.basename(filepath)}", unit=" lines")
-        window["-OUTPUT_WINDOW-"].print(f"File {filename} is being processed...")
+        window["-OUTPUT_WINDOW-"].print(f"File '{filename}' is being processed...", background_color="#4E7AC7")
         
         for line in log_file:
             # Extract information from the line
@@ -74,9 +76,10 @@ def process_file(filepath):
             progress_bar.update(1)  # Update progress bar for each line processed
 
         progress_bar.close()
-        window["-OUTPUT_WINDOW-"].print(f">>> Processing {os.path.basename(filepath)} completed.\n")
+        window["-OUTPUT_WINDOW-"].print(f"Processing '{os.path.basename(filepath)}' completed.", background_color="#46b356")
 
     return matching_lines
+
 
 def set_button_state(disabled):
     """Helper function to set the state of GUI buttons."""
@@ -87,7 +90,6 @@ def set_button_state(disabled):
 
     for button in buttons:
         window[button].update(disabled=disabled)
-
 
 
 def extract_and_write_to_csv(filepath, output_file_csv):
@@ -123,14 +125,15 @@ def extract_and_write_to_csv(filepath, output_file_csv):
             writer = csv.writer(csvfile)
             writer.writerow(["Time", "Job Number", "Profile Name", "Filename", "Filesize in Bytes"])  # Header row
             writer.writerows(data)
-        print(f"Data has been written to {output_file_csv}\n\nTotal Matches: {len(data)}")
+        #print(f"Data has been written to {output_file_csv}\n\nTotal Matches: {len(data)}")
         elapsed_time = time.process_time() - t
-        window["-OUTPUT_WINDOW-"].update(f"Data has been written to: {output_file_csv}\n\nTotal Matches: {len(data)}\nElapsed time: {elapsed_time} seconds")
-        window["-STATUSBAR-"].update(value=f"Processing complete")
+        window["-OUTPUT_WINDOW-"].print(f"\nData has been written to: {output_file_csv}\n\nTotal Log Files: {len(files)}\nTotal Matches: {len(data)}\nElapsed time: {elapsed_time} seconds")
+        window["-STATUSBAR-"].update(value=f"Processing complete!")
         set_button_state(False)
     except Exception as e:
         window["-OUTPUT_WINDOW-"].update("Error writing to CSV:", e)
         set_button_state(False)
+
 
 def print_total_log_files(filepath):
     try:
@@ -164,7 +167,7 @@ def summarize_filesize_in_bytes_column(folder_path_to_csv_result):
         gb = mb / 1024  
 
         # Print the result
-        window["-OUTPUT_WINDOW-"].update(f'Total Filesize in Bytes: {total_filesize}\nIn Kb = {round(kb,2)}\nIn Mb = {round(mb,2)}\nIn Gb = {round(gb,2)}')
+        window["-OUTPUT_WINDOW-"].update(f'Total Filesize in Bytes: {total_filesize}\nIn KB = {round(kb,2)}\nIn MB = {round(mb,2)}\nIn GB = {round(gb,2)}')
     
     except FileNotFoundError:
         window["-OUTPUT_WINDOW-"].update(f"No such file or directory.")
@@ -195,23 +198,23 @@ font = ("Calibri", 13)
 # CONSTANTS
 CSV_FILETPYE = (("CSV (Comma Separated Value)", ".csv"),)
 MENU_DEFINITION = [["&File", ["&Lobster TEST Logs Folder::OpenLogsFolder", "Lobster PROD Logs Folder::OpenLogsFolder", "Clear Output::ClearOutput", "---", "E&xit"]]]
-
+PROGRAM_DESCRIPTION = ""
 # ===== Layout ===== #
 # titlebar = [[sg.Titlebar(title="Log Searcher", icon=PROGRAM_ICON, text_color="#FFFFFF", background_color="#31353d", key="-TITLEBAR-")]]
 
 custom_menubar_layout = [[sg.MenubarCustom(MENU_DEFINITION, bar_background_color="#4d5157", bar_text_color="#FFFFFF",background_color="#4d5157",text_color="#FFFFFF")]]
 
-main_layout  = [[sg.Text("Lobster Message Log Searcher for Input Data Filesize", font="Calibri 15 bold", text_color="#466db3")],
+main_layout  = [[sg.Text("Lobster Message Log Searcher for Input Data Filesize", font="Calibri 15 bold", text_color="#4E7AC7")],
                 [sg.HSep()],
                 [sg.Text("Select folder that contains log files:")],
-                [sg.Input("", key="-LOGS_FILEPATH-", enable_events=True, expand_x=True , pad=5), sg.FolderBrowse(target="-LOGS_FILEPATH-", expand_x=True, key="-BROWSEBTN-", pad=5)],
+                [sg.Input("", key="-LOGS_FILEPATH-", enable_events=True, expand_x=True , pad=5), sg.FolderBrowse(target="-LOGS_FILEPATH-", button_text="Browse", expand_x=True, key="-BROWSEBTN-", pad=5)],
                 [sg.Text("Select folder where to save result as CSV File:")],
                 [sg.Input("", key="-CSV_RESULT-", expand_x=True, pad=5), sg.SaveAs(button_text="Browse", target="-CSV_RESULT-", file_types=CSV_FILETPYE, expand_x=True, key="-SAVEASBTN-", pad=7)],
-                [sg.Button("Start", key="-START-", size=(5,1)), sg.Button("Exit", key="-EXIT-", size=(5,1)), sg.Text("Status:") , sg.StatusBar(" ",key="-STATUSBAR-", auto_size_text=True, size=(10,1))]]
+                [sg.Button("Start", key="-START-", size=(5,1)), sg.Button("Exit", key="-EXIT-", size=(5,1)), sg.Text("Status:") , sg.StatusBar(" ",key="-STATUSBAR-", auto_size_text=True, size=(10,1), font="Calibri 13 bold")]]
 
 csv_summarize_filesize_layout = [[sg.Text("Sum Total Filesize:"), sg.Input("folder/path/to/csv_results.csv", key="-CSV_SUM_FILEPATH-", expand_x=True), sg.FileBrowse(file_types=CSV_FILETPYE, target="-CSV_SUM_FILEPATH-", key="-BROWSEBTNSUM-"), sg.Button("Summarize",key="-GET_SUM-")]]
 
-output_window_layout = [[sg.Multiline(size=(42,12), key="-OUTPUT_WINDOW-")]]
+output_window_layout = [[sg.Multiline(size=(45,12), horizontal_scroll=True, expand_x=True, key="-OUTPUT_WINDOW-")]]
 
 checkbox_layout = [[sg.Checkbox("Summarize Option:", default=False, enable_events=True , key="-CSV_SUM_CHECKBOX-"), sg.pin(sg.Column(csv_summarize_filesize_layout, key="-CSV_SUM_FRAME-", visible=False))]]
 
@@ -222,7 +225,7 @@ layout = [[sg.Column(custom_menubar_layout, expand_x=True)],
 window = sg.Window("Lobster Message Log Searcher", layout, font=font, icon=PROGRAM_ICON, finalize=True, grab_anywhere=True)
 
 # Window Style
-pywinstyles.apply_style(window,"mica")
+pywinstyles.apply_style(window, "mica")
 # Flag which checks the input element for every change
 input_checked = False
 
