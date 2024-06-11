@@ -3,7 +3,7 @@ import re
 import csv
 from tqdm import tqdm
 import os
-from multiprocessing import Pool
+from multiprocessing import Pool, cpu_count
 
 def extract_info_from_line(line):
     """Extracts time, job numbers, profile names, filenames, and filesizes from a log file line.
@@ -74,9 +74,8 @@ def extract_and_write_to_csv(filepath, output_file_csv="extracted_info.csv"):
         filepath: The path to the log file or directory containing log files.
         output_file_csv (optional): The name of the output CSV file (defaults to "extracted_info.csv").
     """
-
     print("Starting app, please wait...")
-    
+
     if os.path.isfile(filepath):
         files = [filepath]
     elif os.path.isdir(filepath):
@@ -85,10 +84,15 @@ def extract_and_write_to_csv(filepath, output_file_csv="extracted_info.csv"):
         print("Invalid filepath.")
         return
 
-    data = []
+    num_workers = min(cpu_count(), len(files))
+    chunk_size = len(files) // num_workers
 
-    for file in tqdm(files, desc="Processing Files"):
-        data.extend(process_file(file))
+    # Process files in parallel using a Pool
+    with Pool(processes=num_workers) as pool:
+        results = pool.map(process_file, files, chunksize=chunk_size)
+
+    # Flatten the list of results
+    data = [item for sublist in results for item in sublist]
 
     try:
         with open(output_file_csv, "w", newline="", encoding="utf-8") as csvfile:
