@@ -45,7 +45,7 @@ menubar_layout = [[sg.MenubarCustom(MENU_DEFINITION, bar_background_color="#4d51
 
 main_layout = [[sg.Text("Select Log File:"), sg.InputText(key="-LOGS_FILEPATH-", enable_events=True, expand_x=True), sg.FileBrowse(file_types=(("Log Files", "*.log"),))],
     [sg.Text("Add RegEx Pattern:"), sg.InputText(key="-PATTERN-", expand_x=True), sg.Button("Add", key="-ADD-", expand_x=True)],
-    [sg.Listbox(values=listbox_element, key="-PATTERNS-", enable_events=True, expand_x=True, expand_y=True)],
+    [sg.Listbox(values=listbox_element, key="-PATTERNS-", right_click_menu=MENU_RIGHT_CLICK_DELETE, enable_events=True, expand_x=True, expand_y=True)],
     [sg.Text("Enter CSV Headers (comma separated):")],
     [sg.InputText(key="-HEADERS-", expand_x=True)],
     [sg.Button("Search and Save to CSV", key="-SEARCH-", expand_x=True)]

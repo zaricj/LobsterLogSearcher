@@ -198,7 +198,7 @@ font = ("Calibri", 13)
 # CONSTANTS
 CSV_FILETPYE = (("CSV (Comma Separated Value)", ".csv"),)
 MENU_DEFINITION = [["&File", ["&Lobster TEST Logs Folder::OpenLogsFolder", "&Lobster PROD Logs Folder::OpenLogsFolder", "---", "&Clear Output::ClearOutput", "---", "E&xit::Exit"]],
-                   ["&Help",["&How to Use::HowToUse"]]]
+                   ["&Help",["&About::About"]]]
 # ===== Layout ===== #
 # titlebar = [[sg.Titlebar(title="Log Searcher", icon=PROGRAM_ICON, text_color="#FFFFFF", background_color="#31353d", key="-TITLEBAR-")]]
 
@@ -282,7 +282,7 @@ while True:
         window.write_event_value(key="-LOGS_FILEPATH-", value="//nesis002/hub/logs/DataWizard")
         window["-LOGS_FILEPATH-"].update("//nesis002/hub/logs/DataWizard")
         
-    if event == "How to Use::HowToUse":
-        window["-OUTPUT_WINDOW-"].update("This program searcher for message .log (_message.log) files only.\nand gets the Time, JobNr, Profile, Filename, Filesize in Bytes.")
+    if event == "About::About":
+        window["-OUTPUT_WINDOW-"].update("Searches for message .log files only!\nPattern: (*_message.log)\n\nWrites the following CSV Headers:\n| Time | Job Number | Profile Name | Filename | Filesize in Bytes |")
         
 window.close()
