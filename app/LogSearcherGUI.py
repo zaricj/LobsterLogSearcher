@@ -183,7 +183,7 @@ custom_theme = {
     "INPUT": "#4d5157",
     "TEXT_INPUT": "#FFFFFF",
     "SCROLL": "#e2e3e3",
-    "BUTTON": ("#000000", "#4E7AC7"),
+    "BUTTON": ("#31353d", "#4E7AC7"),
     "PROGRESS": ("#4E7AC7", "#abacac"),
     "BORDER": 2,
     "SLIDER_DEPTH": 1,
@@ -197,18 +197,18 @@ font = ("Calibri", 13)
 
 # CONSTANTS
 CSV_FILETPYE = (("CSV (Comma Separated Value)", ".csv"),)
-MENU_DEFINITION = [["&File", ["&Lobster TEST Logs Folder::OpenLogsFolder", "Lobster PROD Logs Folder::OpenLogsFolder", "Clear Output::ClearOutput", "---", "E&xit"]]]
-PROGRAM_DESCRIPTION = ""
+MENU_DEFINITION = [["&File", ["&Lobster TEST Logs Folder::OpenLogsFolder", "&Lobster PROD Logs Folder::OpenLogsFolder", "---", "&Clear Output::ClearOutput", "---", "E&xit::Exit"]],
+                   ["&Help",["&How to Use::HowToUse"]]]
 # ===== Layout ===== #
 # titlebar = [[sg.Titlebar(title="Log Searcher", icon=PROGRAM_ICON, text_color="#FFFFFF", background_color="#31353d", key="-TITLEBAR-")]]
 
 custom_menubar_layout = [[sg.MenubarCustom(MENU_DEFINITION, bar_background_color="#4d5157", bar_text_color="#FFFFFF",background_color="#4d5157",text_color="#FFFFFF")]]
 
-main_layout  = [[sg.Text("Lobster Message Log Searcher for Input Data Filesize", font="Calibri 15 bold", text_color="#4E7AC7")],
+main_layout  = [[sg.Text("Lobster Message Log Searcher for Processed Input Data", font="Calibri 15 bold", text_color="#4E7AC7")],
                 [sg.HSep()],
-                [sg.Text("Select folder that contains log files:")],
+                [sg.Text("Choose the folder that containis log files:")],
                 [sg.Input("", key="-LOGS_FILEPATH-", enable_events=True, expand_x=True , pad=5), sg.FolderBrowse(target="-LOGS_FILEPATH-", button_text="Browse", expand_x=True, key="-BROWSEBTN-", pad=5)],
-                [sg.Text("Select folder where to save result as CSV File:")],
+                [sg.Text("Choose the folder where to save the result as a CSV file:")],
                 [sg.Input("", key="-CSV_RESULT-", expand_x=True, pad=5), sg.SaveAs(button_text="Browse", target="-CSV_RESULT-", file_types=CSV_FILETPYE, expand_x=True, key="-SAVEASBTN-", pad=7)],
                 [sg.Button("Start", key="-START-", size=(5,1)), sg.Button("Exit", key="-EXIT-", size=(5,1)), sg.Text("Status:") , sg.StatusBar(" ",key="-STATUSBAR-", auto_size_text=True, size=(10,1), font="Calibri 13 bold")]]
 
@@ -234,7 +234,7 @@ while True:
     event,values = window.read()
     #print(f"Event {event} || Value {values}")
     
-    if (event == sg.WINDOW_CLOSE_ATTEMPTED_EVENT or event == '-EXIT-') and sg.popup_yes_no('Do you really want to exit?') == 'Yes':
+    if (event == sg.WINDOW_CLOSE_ATTEMPTED_EVENT or event == '-EXIT-' or event == "Exit::Exit") and sg.popup_yes_no('Do you really want to exit?') == 'Yes':
         break
     
     if event == sg.WIN_CLOSED:
@@ -281,5 +281,8 @@ while True:
     if event == "Lobster PROD Logs Folder::OpenLogsFolder":
         window.write_event_value(key="-LOGS_FILEPATH-", value="//nesis002/hub/logs/DataWizard")
         window["-LOGS_FILEPATH-"].update("//nesis002/hub/logs/DataWizard")
+        
+    if event == "How to Use::HowToUse":
+        window["-OUTPUT_WINDOW-"].update("This program searcher for message .log (_message.log) files only.\nand gets the Time, JobNr, Profile, Filename, Filesize in Bytes.")
         
 window.close()
