@@ -117,7 +117,7 @@ def extract_and_write_to_csv(filepath, output_file_csv):
     
     for file in tqdm(files, desc="Processing Files"):
         count += 1
-        window["-STATUSBAR-"].update(value = f"Processing: {count}/{len(files)} Files")
+        window["-STATUSBAR-"].update(value = f"Processing: {count}/{len(files)} Files", text_color="#FFFFFF")
         data.extend(process_file(file))
 
     try:
@@ -128,7 +128,7 @@ def extract_and_write_to_csv(filepath, output_file_csv):
         #print(f"Data has been written to {output_file_csv}\n\nTotal Matches: {len(data)}")
         elapsed_time = time.process_time() - t
         window["-OUTPUT_WINDOW-"].print(f"\nData has been written to: {output_file_csv}\n\nTotal Log Files: {len(files)}\nTotal Matches: {len(data)}\nElapsed time: {elapsed_time} seconds")
-        window["-STATUSBAR-"].update(value=f"Processing complete!")
+        window["-STATUSBAR-"].update(value=f"Processing complete!", text_color="#00b76c")
         set_button_state(False)
     except Exception as e:
         window["-OUTPUT_WINDOW-"].update("Error writing to CSV:", e)
@@ -141,7 +141,7 @@ def print_total_log_files(filepath):
             files = [filepath]
         elif os.path.isdir(filepath):
             files = [os.path.join(filepath, f) for f in os.listdir(filepath) if f.endswith("_message.log")] # only log files that end with _message.log
-            window["-STATUSBAR-"].update(value=f"Total log files found: {len(files)}")
+            window["-STATUSBAR-"].update(value=f"Total log files found: {len(files)}", text_color="#FFFFFF")
             window.refresh()
         else:
             window["-STATUSBAR-"].update(value="")
@@ -283,6 +283,6 @@ while True:
         window["-LOGS_FILEPATH-"].update("//nesis002/hub/logs/DataWizard")
         
     if event == "About::About":
-        window["-OUTPUT_WINDOW-"].update("Searches for message .log files only!\nPattern: (*_message.log)\n\nWrites the following CSV Headers:\n| Time | Job Number | Profile Name | Filename | Filesize in Bytes |")
+        window["-OUTPUT_WINDOW-"].update("Searches for message .log files only!\nPattern: (*_message.log)\n\nWrites the following CSV Headers:\n| Time | Job Number | Profile Name | Filename | Filesize in Bytes")
         
 window.close()
