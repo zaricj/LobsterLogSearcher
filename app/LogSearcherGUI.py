@@ -172,6 +172,7 @@ def summarize_filesize_in_bytes_column(folder_path_to_csv_result):
     except FileNotFoundError:
         window["-OUTPUT_WINDOW-"].update(f"No such file or directory.")
         if values["-CSV_RESULT-"]:
+            
             window["-OUTPUT_WINDOW-"].update("Grabbed folder path of input field of previous saved csv result.\n\nPlease retry by pressing SUM again.")
             window["-CSV_SUM_FILEPATH-"].update(values["-CSV_RESULT-"])
         else:
