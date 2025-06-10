@@ -280,6 +280,7 @@ class GenericWorker(QThread):
         self.kwargs = kwargs # Keyword arguments for the task
         self._is_cancelled = False
         self.cancel_requested.connect(self.cancel)
+        self.pattern = re.compile(r"\b(\d{2}:\d{2}:\d{2})\b\s+NORMAL\s+Job:\s+(GENERAL|\d+)\s+\[(.*?)\].*?Start processing data of file '(.+?)'@.*?length=(\d+)")
 
 
     def cancel(self):
@@ -340,7 +341,7 @@ class GenericWorker(QThread):
                 )
 
 
-    def process_file(self, filepath:str, file_index:int, total_files:int) -> None:
+    def process_file(self, filepath:str, file_index:int, total_files:int):
         if self._is_cancelled:
             return
 
@@ -357,12 +358,14 @@ class GenericWorker(QThread):
             int((file_index / total_files) * 100)
         )  # High-level file progress
 
+        filename = os.path.basename(filepath)[:10] # If filename is like 13_05_2025_message.log then 13_05_2025 will be outputted only
+        
         with open(filepath, "r", encoding="utf-8", errors="ignore") as log_file:
             for idx, line in enumerate(log_file, start=1):
                 if self._is_cancelled:
                     break
 
-                extracted_info = self.extract_info_from_line(line)
+                extracted_info = self.extract_info_from_line(line, filename)
                 if extracted_info:
                     yield extracted_info
 
@@ -401,7 +404,7 @@ class GenericWorker(QThread):
                     writer.writerow(
                         [
                             "Time",
-                            "Job Number",
+                            "Job ID",
                             "Profile Name",
                             "Filename",
                             "Filesize in Bytes",
@@ -436,34 +439,9 @@ class GenericWorker(QThread):
         return count
 
 
-    def extract_info_from_line(self, line:str) -> list:
-        time_pattern = r"\b(\d{2}:\d{2}:\d{2})\b"
-        job_number_pattern = r"Job:\s+((?:\d+|GENERAL))"
-        profilename_pattern = r"\[(.*?)]"
-        filename_pattern = r"Start processing data of file '(.*?)'"
-        filesize_pattern = r"length=(\d+),"
-
-        time_match = re.search(time_pattern, line)
-        job_number_match = re.search(job_number_pattern, line)
-        profilename_match = re.search(profilename_pattern, line)
-        filename_match = re.search(filename_pattern, line)
-        filesize_match = re.search(filesize_pattern, line)
-
-        if (
-            time_match
-            and job_number_match
-            and profilename_match
-            and filename_match
-            and filesize_match
-        ):
-            return [
-                time_match.group(1),
-                job_number_match.group(1),
-                profilename_match.group(1),
-                filename_match.group(1),
-                filesize_match.group(1),
-            ]
-        return None
+    def extract_info_from_line(self, line:str, date:str) -> list:
+        match = self.pattern.search(line)
+        return (f"{date} {match.group(1)}", match.group(2), match.group(3), match.group(4), int(match.group(5))) if match else None
 
 
 class StatisticsWindow(QMainWindow):
@@ -549,6 +527,8 @@ class StatisticsWindow(QMainWindow):
             summary_layout.addWidget(export_button)
 
             self.central_widget.addTab(summary_tab, "Summary")
+            
+            self.create_profile_size_analysis_tab() # 15.05.2025 Added here instead of loading it in the constructor need to improve the performance
 
         except Exception as e:
             summary_text.append(f"Error calculating summary statistics: {str(e)}")
@@ -862,6 +842,14 @@ class LogSearcherGUI(QMainWindow):
         exit_action = QAction("Exit", self)
         exit_action.triggered.connect(self.close)
         file_menu.addAction(exit_action)
+        
+        open_menu = menubar.addMenu("&Open")
+        open_csv_output = QAction("Open CSV Output", self)
+        open_csv_output.triggered.connect(
+            lambda: os.startfile(os.path.dirname(self.csv_result_input.text()))
+        )
+        
+        open_menu.addAction(open_csv_output)
 
         presets_menu = menubar.addMenu("&Presets")
         open_test_logs = QAction("//nesist02/hub/logs/DataWizard", self)
