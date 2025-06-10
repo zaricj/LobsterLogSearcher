@@ -21,246 +21,15 @@ from PySide6.QtWidgets import (
     QTextEdit,
     QVBoxLayout,
     QWidget,
-    QTabWidget,
-    QMessageBox,
+    QMessageBox
 )
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Constants
-STYLESHEET_THEME = """
-QWidget {
-    background-color: #232428;
-    color: #ffffff;
-    border-radius: 4px;
-}
-
-QMenuBar {
-    background-color: #232428;
-    padding: 4px;
-}
-
-QMenuBar::item:selected {
-    background-color: #ffc857;
-    border-radius: 4px;
-    color: #1e1e1e;
-}
-
-QMenu {
-    background-color: #232428;
-    border: 1px solid #313338;
-    border-radius: 2px;
-}
-
-QMenu::item:selected {
-    background-color: #ffc857;
-    color: #1e1e1e;
-}
-
-QPushButton {
-    background-color: #ffc857;
-    color: #000000;
-    border: none;
-    padding: 4px 12px;
-    border-radius: 4px;
-    font: bold;
-}
-
-QPushButton:hover {
-    background-color: #e2b04f;
-}
-
-QPushButton:pressed {
-    background-color: #a3803c;
-}
-
-QPushButton:disabled {
-    background-color: #808080;
-}
-
-QPushButton#export_to_excel {
-    background-color: #21a366;
-    color: #000000;
-    border: none;
-    padding: 4px 12px;
-    border-radius: 4px;
-    font: bold;
-}
-
-QPushButton#export_to_excel:hover {
-    background-color: #228b58;
-}
-
-QPushButton#export_to_excel:pressed {
-    background-color: #21754b;
-}
-
-QPushButton#export_to_excel_summary {
-    background-color: #21a366;
-    color: #000000;
-    border: none;
-    padding: 4px 12px;
-    border-radius: 4px;
-    font: bold;
-}
-
-QPushButton#export_to_excel_summary:hover {
-    background-color: #228b58;
-}
-
-QPushButton#export_to_excel_summary:pressed {
-    background-color: #21754b;
-}
-
-QLineEdit, QComboBox, QTextEdit {
-    background-color: #313338;
-    border: 1px solid #4a4a4a;
-    padding: 4px 12px;
-    border-radius: 4px;
-}
-
-QStatusBar {
-    background-color: #313338;
-    border: 1px solid #4a4a4a;
-    padding: 4px 12px;
-    border-radius: 4px;
-    font-size: 16px;
-    font: bold;
-    color: #20df85;
-}
-
-QListWidget {
-    background-color: #313338;
-}
-
-QListWidget::item {
-    height: 26px;
-}
-
-QListWidget::item:selected {
-    background-color: #ffc857;
-    color: #000000;
-}
-
-QComboBox::drop-down {
-    border: none;
-    background-color: #ffc857;
-    width: 20px;
-    border-top-right-radius: 6px;
-    border-bottom-right-radius: 6px;
-}
-
-QComboBox:disabled {
-    background-color: #808080;    
-}
-
-QComboBox::drop-down:disabled {
-    border: none;
-    background-color: #3d3d3d;
-}
-
-QTabWidget::pane {
-    border: 1px solid #313338;
-    border-radius: 4px;
-}
-
-QTabBar::tab {
-    background-color: #232428;
-    border: 1px solid #313338;
-    padding: 4px 12px;;
-    border-radius: 4px;
-    margin: 0 2px;
-}
-
-QTabBar::tab:selected {
-    background-color: #ffc857;
-    color: #000000;
-}
-
-QTableView {
-    background-color: #313338;
-}
-
-QGroupBox {
-    border: 1px solid #313338;
-    border-radius: 4px;
-    margin-top: 10px;
-    padding: 10px;
-    font: bold;
-    color: #ffc857;
-}
-
-QGroupBox::title {
-    subcontrol-origin: margin;
-    subcontrol-position: top left;
-    left: 12px;
-    padding: 0 6px;
-}
-
-QRadioButton::indicator {
-    width: 16px;
-    height: 16px;
-}
-
-QRadioButton:disabled {
-    color: #808080; 
-}
-
-QScrollBar:vertical {
-    border: none;
-    background: #232428;
-    width: 12px;
-    margin: 4px;
-    border-radius: 4px;
-}
-
-QScrollBar::handle:vertical {
-    background: #313338;
-    min-height: 20px;
-    border-radius: 4px;
-}
-
-QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
-    height: 0px;
-}
-
-/* Progress Bar */
-QProgressBar {
-    background-color: #313338;
-    border: 1px solid #4a4a4a;
-    border-radius: 4px;
-    text-align: center;
-    color: #ffffff;
-    padding: 1px 2px;
-}
-
-QProgressBar::chunk {
-    background-color: #21a366;
-}
-
-/* CheckBox */
-QCheckBox {
-    spacing: 6px;
-}
-
-QCheckBox::indicator {
-    width: 16px;
-    height: 16px;
-    border-radius: 4px;
-    background-color: #313338;
-    border: 1px solid #4a4a4a;
-}
-
-QCheckBox::indicator:checked {
-    background-color: #ffc857;
-    border: 1px solid #ec971f;
-}
-
-QCheckBox::indicator:unchecked {
-    background-color: #313338;
-    border: 1px solid #4a4a4a;
-}
-"""
+STYLESHEET_THEME = os.path.join(SCRIPT_DIR, "_internal", "themes", "theme.qss")
+with open(STYLESHEET_THEME, "r") as f:
+    THEME = f.read()
 
 
 class GenericWorker(QThread):
@@ -486,6 +255,7 @@ class GenericWorker(QThread):
             return [full_timestamp, match.group(2), match.group(3), match.group(4), int(match.group(5))]
         return None
 
+
     def generate_and_emit_statistics(self, csv_path:str) -> None:
         try:
             self.output_window.emit("Generating summary statistics... please wait.")
@@ -497,6 +267,23 @@ class GenericWorker(QThread):
         except Exception as e:
             self.messagebox_crit.emit("Statistics Generation Error", f"An error occurred during statistics generation: {e}")
             self.finished.emit("Statistics generation failed.")
+        
+        finally:
+            # --- CRITICAL MEMORY CLEANUP ---
+            if hasattr(self, 'statistics_dataframes'):
+                # Explicitly delete the reference to the large DataFrame(s)
+                # This makes them eligible for Python's garbage collection
+                del self.statistics_dataframes
+                self.statistics_dataframes = None
+
+            # Other large dataframes that are specific to tasks
+            # For example, if 'df_logs' or 'filtered_df' are instance variables:
+            if hasattr(self, 'df_logs'):
+                del self.df_logs
+                self.df_logs = None
+            if hasattr(self, 'filtered_df'):
+                del self.filtered_df
+                self.filtered_df = None
 
 
     def create_summary(self, csv_path:str) -> None:
@@ -698,7 +485,7 @@ class LogSearcherGUI(QMainWindow):
     #     # ... (removed content)
 
     def apply_stylesheet(self):
-        self.setStyleSheet(STYLESHEET_THEME)
+        self.setStyleSheet(THEME)
 
 
     def setup_menubar(self):
@@ -751,6 +538,7 @@ class LogSearcherGUI(QMainWindow):
         open_prod_logs.triggered.connect(
             lambda: self.open_logs_folder("//nesis002/hub/logs/DataWizard")
         )
+        
         presets_menu.addAction(open_prod_logs)
         help_menu = menubar.addMenu("&Help")
 
@@ -953,10 +741,12 @@ class LogSearcherGUI(QMainWindow):
                 f"Exported statistics to:\n{file_path}",
             )
             self.program_output_window.append(f"Statistics exported to: {file_path}")
+            statistics_dataframes.clear() # Clear the DataFrame so it doesn't consume RAM
 
         except Exception as e:
             QMessageBox.critical(self, "Export Failed", f"An error occurred during statistics export: {e}")
             self.program_output_window.append(f"Error exporting statistics: {e}")
+
 
     def open_logs_folder(self, path:str) -> None:
         if os.path.exists(path):
@@ -983,6 +773,7 @@ class LogSearcherGUI(QMainWindow):
             action = QAction(f, self)
             action.triggered.connect(lambda checked, p=f: self.open_logs_folder(p))
             self.recent_menu.addAction(action)
+
 
     def clear_all_output(self) -> None:
         self.program_output_window.clear()
@@ -1065,7 +856,7 @@ class LogSearcherGUI(QMainWindow):
                     self.status_bar.showMessage(f"Selected file '{os.path.basename(filepath)}' is not a '_message.log' file.")
             elif os.path.isdir(filepath):
                 files = [f for f in os.listdir(filepath) if f.endswith("_message.log") and os.path.isfile(os.path.join(filepath, f))]
-                self.status_bar.showMessage(f"Total '_message.log' files found: {len(files)}")
+                self.status_bar.showMessage(f"Total message log files found: {len(files)}")
             else:
                 self.status_bar.clearMessage()
         except (TypeError, FileNotFoundError, PermissionError) as e:
@@ -1118,7 +909,7 @@ class LogSearcherGUI(QMainWindow):
         self.status_bar.showMessage("Processing complete!", 5000) # Clear after showing
         self.start_button.setEnabled(True)
         self.cancel_button.setEnabled(False)
-        self.progress_bar.setValue(100)
+        self.progress_bar.setValue(0)
 
     # ====== END Slots for the Signals END ====== #
 
