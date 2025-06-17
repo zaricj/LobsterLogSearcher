@@ -317,6 +317,9 @@ class GenericWorker(QThread):
             self.messagebox_crit.emit("Column Missing", "Required column 'Filesize in Bytes' or 'Filename' or 'Profile Name' not found in CSV for summary.")
         except Exception as e:
             self.messagebox_crit.emit("Error creating summary", f"An exception occurred during summary creation: {e}")
+        
+        finally:
+            del df
 
 
     def create_profile_size_analysis(self, csv_path:str) -> None:
@@ -357,7 +360,8 @@ class GenericWorker(QThread):
             self.messagebox_crit.emit("Column Missing", "Required column 'Filesize in Bytes' or 'Filename' or 'Profile Name' not found in CSV for profile analysis.")
         except Exception as e:
             self.messagebox_crit.emit("Error creating profile size analysis", f"An exception occurred during profile size analysis: {e}")
-
+        finally:
+            del df
 
 class LogSearcherGUI(QMainWindow):
     
@@ -624,7 +628,7 @@ class LogSearcherGUI(QMainWindow):
 
     # Worker Thread for exporting CSV files to Excel - To combat GUI freezes
     def start_export_to_excel(self, csv_file_path:str, excel_file_path:str) -> None:
-        self.worker = GenericWorker("export_excel",csv_file_path, excel_file_path)
+        self.worker = GenericWorker("export_excel", csv_file_path, excel_file_path)
         self.worker.output_window.connect(self.write_to_output_window)
         self.worker.messagebox_info.connect(self.messagebox_popup_info)
         self.worker.messagebox_warn.connect(self.messagebox_popup_warn)
@@ -815,8 +819,8 @@ class LogSearcherGUI(QMainWindow):
     # Clear the recent folders from QSettings and the "Recent Menu" Menubar
     def clear_recent_folders(self) -> None:
         reply = QMessageBox.question(self, "Clear Recent Folders",
-                                     "Are you sure you want to clear the list of recent folders?",
-                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+                                    "Are you sure you want to clear the list of recent folders?",
+                                    QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if reply == QMessageBox.Yes:
             # Remove the 'recent_folders' key from QSettings
             self.settings.remove("recent_folders")
@@ -910,6 +914,11 @@ class LogSearcherGUI(QMainWindow):
         self.start_button.setEnabled(True)
         self.cancel_button.setEnabled(False)
         self.progress_bar.setValue(0)
+        
+        if hasattr("worker"): # Cleanup of worker
+            del self.worker
+            self.worker = None
+            print("Worker has been cleaned up...")
 
     # ====== END Slots for the Signals END ====== #
 
